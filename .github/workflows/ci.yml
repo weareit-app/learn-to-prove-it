@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build against the pinned Mathlib
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.21.0
+      # Every action is pinned and reviewed (docs/architecture/ci-actions.md).
+      - run: node tools/action-pins/check-action-pins.mjs
+      # elan v4.2.4, a pinned release binary checked against its SHA-256
+      # (docs/architecture/ci-actions.md, "Downloads").
+      - name: Install elan
+        run: |
+          curl -sSfL -o elan.tar.gz https://github.com/leanprover/elan/releases/download/v4.2.4/elan-x86_64-unknown-linux-gnu.tar.gz
+          echo "42b94d4244e8353142c456ec0e4ca6528fd898a6c604d4059f494e706e431f63  elan.tar.gz" | sha256sum --check
+          tar xzf elan.tar.gz
+          ./elan-init -y --default-toolchain none
+          rm elan.tar.gz elan-init
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - run: lake exe cache get
+      - run: ./scripts/check.sh
