@@ -53,7 +53,7 @@ The checker decides one thing: whether a Lean proof of an exercise's obligation 
 
 | Verdict | Meaning |
 |---|---|
-| `accepted` | A correct proof, with its axioms and the `watched` declarations it refers to |
+| `accepted` | A correct proof, with its axioms, the `watched` declarations it depends on, and whether that citation list is complete |
 | `unknown obligation` | The name is not an exposed definition (a caller error) |
 | `unparsable` | The text is not a Lean term |
 | `ill-typed` | The term does not elaborate to a proof of the obligation |
@@ -61,7 +61,15 @@ The checker decides one thing: whether a Lean proof of an exercise's obligation 
 | `kernel rejected` | The kernel refused the elaborated proof |
 | `disallowed axioms` | The proof uses an axiom other than `propext`, `Classical.choice`, `Quot.sound` (for example through `native_decide`) |
 
-Elaborating a submission runs arbitrary Lean, tactics included. Real learner input goes through a sandboxed runner (`lean-on-it`), never a public service.
+### What citations cover
+
+`cited` lists the watched declarations in the proof's whole dependency closure, directly or through other theorems, matched by declaration identity. The closure can only be followed where the environment holds the bodies. Under the module system an imported theorem's proof is hidden (it appears as an axiom), so the verdict's `citationsComplete` flag is false whenever the closure reaches one, and a watched declaration behind it would be missed. A checking environment built with plain (non-module) imports holds every body and gives complete citations; `LearnToProveItTest/FullEnvironment.lean` tests this, including a revealing result reached through two wrapper theorems.
+
+Even complete citations cover only what is on the watched list. A proof that re-proves a result inline, or uses an unlisted result that states the same thing, cites nothing. A missing citation is therefore not evidence that the learner derived the proof independently.
+
+### Untrusted input
+
+Elaborating a submission runs arbitrary Lean, tactics included, with effects outside Lean's environment. Restoring the environment afterwards is not a security boundary. Real learner input goes through a sandboxed runner (`lean-on-it`). Until that integration lands, nothing in this repository exposes the checker to untrusted input: the only executable prints metadata.
 
 ## The exported metadata
 
@@ -75,8 +83,8 @@ Elaborating a submission runs arbitrary Lean, tactics included. Real learner inp
 | `id`, `version`, `title` | The family's identity |
 | `scope` | What the export asserts (mathematical correctness) and does not (anything about a learner) |
 | `environment` | Lean and Mathlib pins the obligations are checked in |
-| `checker` | The checker's declaration, input, allowed axioms, verdicts, and sandbox requirement |
-| `provenance` | `independently_derived`, the licence, the design source, and inspiration (no copied text or illustrations) |
+| `checker` | The checker's declaration, input, allowed axioms, verdicts, what citations cover, and the sandbox requirement |
+| `provenance` | `independently_derived`, the licence, the design source, and `sources`: one record per external source edition consulted |
 | `mathlibReuse` | Mathlib declarations reused, and how (validation gate G3) |
 | `competencies` | Proposed competency IDs in the `learn-to-prove-it:` namespace, each with `status: proposed` |
 | `exercises` | The exercises, in order |
@@ -98,7 +106,23 @@ Elaborating a submission runs arbitrary Lean, tactics included. Real learner inp
 | `revealing` | Results that already state the answer: library results, and the exercise's own reference solution and soundness theorem |
 | `status` | Typed statuses: `referenceSolution`, `familySoundness`, `statementFidelity` (`not-reviewed` until an independent review). There is no single `verified` flag |
 
-Pass `suppliedFacts` and `revealing` as the checker's `watched` list: an accepted verdict then reports which of them the proof used.
+Pass `suppliedFacts` and `revealing` as the checker's `watched` list: an accepted verdict then reports which of them the proof depends on (see [What citations cover](#what-citations-cover)).
+
+### Source edition fields
+
+Each record in `provenance.sources` identifies one edition precisely. The web edition and the EPUB of a book are separate records, and only the edition consulted is recorded. The record is provenance, not a licence grant.
+
+| Field | Meaning |
+|---|---|
+| `title`, `author`, `edition` | The work and which edition of it |
+| `url` | The edition's canonical address |
+| `locator`, `locatorUrl` | The chapter and sections consulted |
+| `licence`, `licenceUrl`, `licenceEvidence` | The licence the edition states, as stated, and where it states it |
+| `revision`, `retrieved` | The revision consulted, as precisely as it can be pinned, and when |
+| `transformation` | How the family relates to it (`independently_derived`) |
+| `use` | What was taken (instructional inspiration) and what was not (no text, illustrations or exercises) |
+
+The family records one source: the **web edition** of Jencel Panic's *Category Theory Illustrated* (<https://abuseofnotation.github.io/category-theory-illustrated/>). The consulted parts are chapter "Sets", sections "Functions" and "Functions and Subsets". The site states CC BY-NC 4.0, and the source repository was at commit `8378ac8` on 2026-10-28.
 
 ### Example: the reasoning exercise as exported
 

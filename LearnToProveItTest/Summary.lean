@@ -9,9 +9,12 @@ namespace LearnToProveIt
 
 open Lean
 
-/-- The verdict's kind, with the axioms and citations of an acceptance. -/
+/-- The verdict's kind, with the axioms and citations of an acceptance, and
+whether those citations are partial. -/
 public meta def summary : Verdict → String
-  | .accepted axioms cited => s!"accepted; axioms: {axioms.toList}; cites: {cited.toList}"
+  | .accepted axioms cited complete =>
+    s!"accepted; axioms: {axioms.toList}; cites: {cited.toList}" ++
+      if complete then "" else " (citations partial)"
   | .rejected reason => s!"rejected: {reason.kind}"
 
 end LearnToProveIt

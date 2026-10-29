@@ -4,6 +4,7 @@ public meta import LearnToProveIt.Checker
 public meta import LearnToProveIt.GraphComp.Metadata
 public import LearnToProveIt.GraphComp.Reasoning
 public import LearnToProveItTest.Summary
+public import LearnToProveItTest.Wrappers
 
 /-!
 # Checker tests: the reasoning exercise
@@ -20,7 +21,7 @@ meta def revealing : Array Lean.Name := reasoning.watched.toArray
 
 /-! ## Accepted -/
 
-/-- info: "accepted; axioms: []; cites: []" -/
+/-- info: "accepted; axioms: []; cites: [] (citations partial)" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Reasoning.obligation
   "fun f r a c => ⟨fun ⟨b, hb, h⟩ => hb ▸ h, fun h => ⟨f a, rfl, h⟩⟩"
@@ -35,19 +36,34 @@ meta def revealing : Array Lean.Name := reasoning.watched.toArray
   · intro h
     exact ⟨f a, rfl, h⟩"
 
-/-! Citing the library result that already states the answer is correct
+/-! Under the module system, imported proofs are hidden, so a citation behind
+one could be missed: an acceptance whose proof reaches one is marked "citations
+partial". The tactic proof above reaches none.
+
+Citing the library result that already states the answer is correct
 mathematics. The checker accepts it and reports the citation; what that says
 about the learner is for the learning engine to decide. -/
 
-/-- info: "accepted; axioms: [propext, Quot.sound]; cites: [Relation.fun_eq_comp]" -/
+/-- info: "accepted; axioms: [propext, Quot.sound]; cites: [Relation.fun_eq_comp] (citations partial)" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Reasoning.obligation
   "by intro α β γ f r a c; rw [Relation.fun_eq_comp]" revealing
 
-/-- info: "accepted; axioms: []; cites: [LearnToProveIt.graph_comp_iff]" -/
+/-- info: "accepted; axioms: []; cites: [LearnToProveIt.graph_comp_iff] (citations partial)" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Reasoning.obligation
   "fun f r a c => graph_comp_iff f r a c" revealing
+
+/-! Citing a revealing result through a wrapper theorem defined in another
+module. These tests run under the module system, which hides imported proofs,
+so the checker cannot see that the wrapper uses `graph_comp_iff`. It reports no
+citation, and says its citations are partial. `FullEnvironment` checks the same
+submission where the bodies are available. -/
+
+/-- info: "accepted; axioms: []; cites: [] (citations partial)" -/
+#guard_msgs in
+#eval summary <$> checkSubmission ``Reasoning.obligation
+  "fun f r a c => LearnToProveItTest.renamedTwice f r a c" revealing
 
 /-! ## Rejected -/
 

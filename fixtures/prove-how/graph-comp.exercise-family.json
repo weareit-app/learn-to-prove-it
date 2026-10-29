@@ -5,9 +5,10 @@
       "Classical.choice",
       "Quot.sound"
     ],
+    "citations": "An accepted verdict lists the watched declarations (an exercise's supplied facts and revealing declarations) in the proof's dependency closure, found by declaration identity, and says whether that closure is complete. It is partial when the closure reaches a hidden body, as imported proofs are under the module system; an environment built with plain imports gives complete citations. A missing citation is not evidence that the learner derived the proof: an inline re-proof, or a result not on the watched list that states the same thing, cites nothing.",
     "declaration": "LearnToProveIt.checkSubmission",
     "input": "The obligation's name, and Lean source for a term (a `by` block is a term) that proves it.",
-    "sandbox": "Elaborating a submission runs arbitrary Lean. Real learner input goes through a sandboxed runner (lean-on-it), never a public service.",
+    "sandbox": "Elaborating a submission runs arbitrary Lean, and the throwaway environment is not a security boundary. Real learner input goes through a sandboxed runner (lean-on-it). Nothing in this repository exposes the checker to untrusted input.",
     "verdicts": [
       "accepted",
       "unknown obligation",
@@ -280,8 +281,24 @@
   ],
   "provenance": {
     "design": "prove.how v0.6 first theorem test, track A, and its learning-evidence trial",
-    "inspiration": "Jencel Panic, Category Theory Illustrated, as instructional inspiration only. No text or illustrations are copied.",
     "licence": "Apache-2.0",
+    "sources": [
+      {
+        "author": "Jencel Panic",
+        "edition": "web edition",
+        "licence": "Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)",
+        "licenceEvidence": "Stated on the web edition's index page and chapter pages. The source repository has no licence file.",
+        "licenceUrl": "http://creativecommons.org/licenses/by-nc/4.0/",
+        "locator": "Chapter \"Sets\", sections \"Functions\" and \"Functions and Subsets\"",
+        "locatorUrl": "https://abuseofnotation.github.io/category-theory-illustrated/01_set/",
+        "retrieved": "2026-10-28",
+        "revision": "github.com/abuseofnotation/category-theory-illustrated at commit 8378ac8ccbc7eeaab4cce75402819a320566fdc7, the source of the site when retrieved",
+        "title": "Category Theory Illustrated",
+        "transformation": "independently_derived",
+        "url": "https://abuseofnotation.github.io/category-theory-illustrated/",
+        "use": "Instructional inspiration only: functions between sets, and the function sending each element of a subset to itself. No text, illustrations or exercises are reproduced. The source has no section on graphs of functions; the exercises are written here."
+      }
+    ],
     "transformation": "independently_derived"
   },
   "schema": "learn-to-prove-it/exercise-family-export",

@@ -18,8 +18,11 @@ proof; a rejected one is not a correct proof *as written in Lean*, which is not
 the same as the learner's informal reasoning being wrong. What either says about
 the learner is for the learning engine to decide.
 
-Elaborating a submission runs arbitrary Lean, including tactics. Real learner
-input must go through a sandboxed runner (`lean-on-it`), never a public service.
+Elaborating a submission runs arbitrary Lean, including tactics with effects
+outside Lean's environment. `withoutModifyingEnv` restores the environment; it
+is not a security boundary. Real learner input must go through a sandboxed
+runner (`lean-on-it`). Until that integration lands, nothing in this repository
+(no executable, server or tool) calls the checker on untrusted input.
 -/
 
 namespace LearnToProveIt
@@ -55,9 +58,11 @@ public meta def Rejection.kind : Rejection → String
 
 /-- The checker's verdict on a submission. -/
 public inductive Verdict where
-  /-- A correct proof, with the axioms it depends on and the watched
-  declarations it refers to. -/
-  | accepted (axioms : Array Name) (cited : Array Name)
+  /-- A correct proof, with the axioms and the watched declarations it depends
+  on. `citationsComplete` is false when the dependency closure reached a
+  declaration whose body the environment does not hold, so a watched
+  declaration behind it would be missed. -/
+  | accepted (axioms : Array Name) (cited : Array Name) (citationsComplete : Bool)
   | rejected (reason : Rejection)
   deriving Repr, BEq
 
@@ -72,26 +77,40 @@ public meta def allowedAxioms : Array Name := #[``propext, ``Classical.choice, `
 /-- The name a submission is added under, in the throwaway environment. -/
 public meta def submissionName : Name := `_learnToProveIt_submission
 
-/-- Constants that `value` refers to, looking through auxiliary declarations
-that elaboration added (absent from `base`), such as abstracted proofs. -/
-meta partial def referencedConstants (base env : Environment) (value : Expr) :
-    NameSet :=
-  go value.getUsedConstantsAsSet {}
-where
-  go (todo : NameSet) (seen : NameSet) : NameSet := Id.run do
-    let mut seen := seen
-    let mut next : NameSet := {}
-    for n in todo do
-      if seen.contains n then continue
-      seen := seen.insert n
-      if base.contains n then continue
-      if let some v := (env.find? n).bind (·.value?) then
-        next := next.append v.getUsedConstantsAsSet
-    if next.isEmpty then seen else go next seen
+/-- The constants `root` depends on: those in its type and value, and theirs,
+transitively (the closure `collectAxioms` walks). Also whether that closure is
+complete. It is not when it reaches a declaration whose body the environment
+hides: under the module system an imported theorem, or an unexposed definition,
+appears as an axiom. Such a declaration is told apart from a real axiom because
+a real axiom is among its own axioms. -/
+meta partial def dependencies (root : Name) : CoreM (NameSet × Bool) := do
+  let env ← getEnv
+  let mut todo := [root]
+  let mut seen : NameSet := {}
+  let mut complete := true
+  while true do
+    let n :: rest := todo | break
+    todo := rest
+    if seen.contains n then continue
+    seen := seen.insert n
+    let some info := env.find? n | complete := false; continue
+    if info matches .axiomInfo _ then
+      unless (← collectAxioms n).contains n do complete := false
+    let body := (info.value? (allowOpaque := true)).elim #[] (·.getUsedConstants)
+    todo := (info.type.getUsedConstants ++ body).toList ++ todo
+  return (seen, complete)
 
 /-- Check `submission`, Lean source for a term, as a proof of the proposition
 defined by `obligation`. Reports which of `watched` (for an exercise, its
-supplied facts and revealing declarations) the proof refers to. Leaves the environment and
+supplied facts and revealing declarations) the proof depends on, directly or
+through other declarations.
+
+A citation is found by declaration identity only. A proof that re-proves a
+watched result inline, or uses another result stating the same thing, cites
+nothing, so a missing citation is not evidence that the learner derived the
+proof independently. Citations are complete only in an environment holding the
+bodies of every declaration the proof depends on, such as one built by a plain
+(non-module) `import`; the verdict says whether they are. Leaves the environment and
 message log as it found them. -/
 public meta def checkSubmission (obligation : Name) (submission : String)
     (watched : Array Name := #[]) : CoreM Verdict := do
@@ -128,8 +147,8 @@ public meta def checkSubmission (obligation : Name) (submission : String)
       let axioms ← collectAxioms submissionName
       let disallowed := axioms.filter (!allowedAxioms.contains ·)
       if !disallowed.isEmpty then return .rejected (.disallowedAxioms disallowed)
-      let used := referencedConstants base (← getEnv) value
-      return .accepted axioms (watched.filter used.contains)
+      let (used, complete) ← dependencies submissionName
+      return .accepted axioms (watched.filter used.contains) complete
   finally
     Core.setMessageLog savedLog
 

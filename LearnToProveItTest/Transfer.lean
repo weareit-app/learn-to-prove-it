@@ -24,7 +24,7 @@ example : Transfer.obligation = Transfer.family {n : ℕ | Even n} (· ∣ ·) �
 /-! Using the reasoning exercise's result, a supplied fact here, is reported as a
 citation like any other listed declaration. -/
 
-/-- info: "accepted; axioms: [propext]; cites: [LearnToProveIt.graph_comp_iff]" -/
+/-- info: "accepted; axioms: [propext]; cites: [LearnToProveIt.graph_comp_iff] (citations partial)" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Transfer.obligation
   "⟨fun x z => graph_comp_iff Subtype.val (· ∣ ·) x z, ⟨4, rfl, by decide⟩,
@@ -33,7 +33,7 @@ citation like any other listed declaration. -/
 
 /-! Reasoning from scratch, without the earlier result. -/
 
-/-- info: "accepted; axioms: [propext]; cites: []" -/
+/-- info: "accepted; axioms: [propext]; cites: [] (citations partial)" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Transfer.obligation "by
   refine ⟨fun x z => ⟨?_, fun h => ⟨x, rfl, h⟩⟩, ⟨4, rfl, by decide⟩, ?_⟩

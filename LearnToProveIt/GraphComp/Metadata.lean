@@ -180,14 +180,38 @@ public def graphComp : ExerciseFamily where
     allowedAxioms := [`propext, `Classical.choice, `Quot.sound]
     verdicts := ["accepted", "unknown obligation", "unparsable", "ill-typed", "incomplete",
       "kernel rejected", "disallowed axioms"]
-    sandbox := "Elaborating a submission runs arbitrary Lean. Real learner input goes through \
-      a sandboxed runner (lean-on-it), never a public service." }
+    citations := "An accepted verdict lists the watched declarations (an exercise's supplied \
+      facts and revealing declarations) in the proof's dependency closure, found by \
+      declaration identity, and says whether that closure is complete. It is partial when \
+      the closure reaches a hidden body, as imported proofs are under the module system; \
+      an environment built with plain imports gives complete citations. A missing citation \
+      is not evidence that the learner derived the proof: an inline re-proof, or a result \
+      not on the watched list that states the same thing, cites nothing."
+    sandbox := "Elaborating a submission runs arbitrary Lean, and the throwaway environment \
+      is not a security boundary. Real learner input goes through a sandboxed runner \
+      (lean-on-it). Nothing in this repository exposes the checker to untrusted input." }
   provenance := {
     transformation := "independently_derived"
     licence := "Apache-2.0"
     design := "prove.how v0.6 first theorem test, track A, and its learning-evidence trial"
-    inspiration := "Jencel Panic, Category Theory Illustrated, as instructional inspiration \
-      only. No text or illustrations are copied." }
+    sources := [{
+      title := "Category Theory Illustrated"
+      author := "Jencel Panic"
+      edition := "web edition"
+      url := "https://abuseofnotation.github.io/category-theory-illustrated/"
+      locator := "Chapter \"Sets\", sections \"Functions\" and \"Functions and Subsets\""
+      locatorUrl := "https://abuseofnotation.github.io/category-theory-illustrated/01_set/"
+      licence := "Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)"
+      licenceUrl := "http://creativecommons.org/licenses/by-nc/4.0/"
+      licenceEvidence := "Stated on the web edition's index page and chapter pages. The source \
+        repository has no licence file."
+      revision := "github.com/abuseofnotation/category-theory-illustrated at commit \
+        8378ac8ccbc7eeaab4cce75402819a320566fdc7, the source of the site when retrieved"
+      retrieved := "2026-10-28"
+      transformation := "independently_derived"
+      use := "Instructional inspiration only: functions between sets, and the function sending \
+        each element of a subset to itself. No text, illustrations or exercises are reproduced. \
+        The source has no section on graphs of functions; the exercises are written here." }] }
   mathlibReuse := [
     { declaration := `Relation.fun_eq_comp
       use := "States the reasoning exercise's result as an equation of relations. \

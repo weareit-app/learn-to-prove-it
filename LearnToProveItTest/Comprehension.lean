@@ -22,12 +22,12 @@ example : Comprehension.obligation = Comprehension.family (fun n : ℕ => 2 * n 
 
 /-! Matching on the numeral equation `7 = 8` goes through `propext`. -/
 
-/-- info: "accepted; axioms: [propext]; cites: []" -/
+/-- info: "accepted; axioms: [propext]; cites: [] (citations partial)" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Comprehension.obligation
   "⟨rfl, (fun h => nomatch h), ⟨7, rfl, fun _ h => h.symm⟩⟩"
 
-/-- info: "accepted; axioms: [propext]; cites: []" -/
+/-- info: "accepted; axioms: [propext]; cites: [] (citations partial)" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Comprehension.obligation
   "⟨rfl, by simp, 7, rfl, fun y h => by simpa using h.symm⟩"
@@ -43,7 +43,7 @@ example : Comprehension.obligation = Comprehension.family (fun n : ℕ => 2 * n 
 
 /-! Citing the exercise's own answer key is accepted and reported. -/
 
-/-- info: "accepted; axioms: []; cites: [LearnToProveIt.GraphComp.Comprehension.solution]" -/
+/-- info: "accepted; axioms: []; cites: [LearnToProveIt.GraphComp.Comprehension.solution] (citations partial)" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Comprehension.obligation "Comprehension.solution"
   comprehension.watched.toArray

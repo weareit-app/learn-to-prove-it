@@ -143,7 +143,34 @@ public structure CheckerInfo where
   input : String
   allowedAxioms : List Name
   verdicts : List String
+  /-- What an accepted verdict's citations cover, and what they do not. -/
+  citations : String
   sandbox : String
+  deriving ToJson
+
+/-- One edition of an external source, identified precisely. Different
+editions of a work (a web edition and an EPUB, say) are different records. This
+is provenance, not a licence grant. -/
+public structure SourceEdition where
+  title : String
+  author : String
+  edition : String
+  url : String
+  /-- The part of the source that was consulted. -/
+  locator : String
+  locatorUrl : String
+  /-- The licence the edition states, as stated, and where it says so. -/
+  licence : String
+  licenceUrl : String
+  licenceEvidence : String
+  /-- The revision of the edition consulted, as far as it can be pinned. -/
+  revision : String
+  retrieved : String
+  /-- How the family relates to this source: `independently_derived` here, never
+  `adapts` or `copies`. -/
+  transformation : String
+  /-- What was and was not taken from the source. -/
+  use : String
   deriving ToJson
 
 /-- Where the family came from. -/
@@ -151,7 +178,7 @@ public structure Provenance where
   transformation : String
   licence : String
   design : String
-  inspiration : String
+  sources : List SourceEdition
   deriving ToJson
 
 /-- An exercise family and its exercises, in order. -/
