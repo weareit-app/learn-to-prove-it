@@ -1,5 +1,6 @@
 module
 
 public import LearnToProveItTest.Comprehension
+public import LearnToProveItTest.Metadata
 public import LearnToProveItTest.Reasoning
 public import LearnToProveItTest.Transfer

@@ -1,6 +1,7 @@
 module
 
 public meta import LearnToProveIt.Checker
+public meta import LearnToProveIt.GraphComp.Metadata
 public import LearnToProveIt.GraphComp.Reasoning
 public import LearnToProveItTest.Summary
 
@@ -13,8 +14,9 @@ submission, as source text, and the checker's verdict on it.
 
 open LearnToProveIt GraphComp
 
-/-- Library results that already state the answer. -/
-meta def revealing : Array Lean.Name := #[``Relation.fun_eq_comp, ``graph_comp_iff]
+/-- The declarations whose use the checker reports: here, library results that
+already state the answer. -/
+meta def revealing : Array Lean.Name := reasoning.watched.toArray
 
 /-! ## Accepted -/
 
@@ -89,7 +91,7 @@ about the learner is for the learning engine to decide. -/
 
 /-! ## Caller errors and hygiene -/
 
-/-- info: "rejected: unknown obligation LearnToProveIt.GraphComp.Reasoning.nope" -/
+/-- info: "rejected: unknown obligation" -/
 #guard_msgs in
 #eval summary <$> checkSubmission `LearnToProveIt.GraphComp.Reasoning.nope "trivial"
 

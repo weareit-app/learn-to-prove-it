@@ -30,6 +30,7 @@ A change is done when `./scripts/check.sh` passes, its tests cover the behaviour
 - Decisions: `docs/architecture/decisions.md`. Dependencies: `docs/architecture/dependencies.md`. CI actions, downloads and their reviews: `docs/architecture/ci-actions.md`.
 - Choosing which skill or flow fits: `.claude/skills/ask-learn-to-prove-it/SKILL.md` (`/ask-learn-to-prove-it`; Codex: `$ask-learn-to-prove-it`). Running skills: `docs/agents/skills.md`.
 - Domain terms and decision records: `docs/agents/domain.md`.
+- Exercises, the checker and the prove.how metadata export: `docs/exercises/graph-comp.md`. Terms: `GLOSSARY.md`.
 - Skills: Matt Pocock's skills (MIT), vendored unmodified from `github.com/mattpocock/skills` at commit `59db609eb1e18aaf59b63284d0e52255aff0c63c`: the `engineering/` and `productivity/` catalogs, in `.claude/skills/` (Claude Code) and the same copy in `.agents/skills/` (Codex). `LICENSE` in each folder is the upstream MIT notice. `ask-learn-to-prove-it` is this repository's own skill.
 
 ## Agent skills

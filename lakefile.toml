@@ -14,3 +14,8 @@ name = "LearnToProveIt"
 # builds them.
 [[lean_lib]]
 name = "LearnToProveItTest"
+
+# Prints the exercise metadata that prove.how reads, as JSON.
+[[lean_exe]]
+name = "export-exercise-metadata"
+root = "ExportExerciseMetadata"

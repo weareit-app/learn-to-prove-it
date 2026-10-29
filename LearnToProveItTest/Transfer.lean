@@ -1,6 +1,7 @@
 module
 
 public meta import LearnToProveIt.Checker
+public meta import LearnToProveIt.GraphComp.Metadata
 public import LearnToProveIt.GraphComp.Transfer
 public import LearnToProveItTest.Summary
 
@@ -28,7 +29,7 @@ citation like any other listed declaration. -/
 #eval summary <$> checkSubmission ``Transfer.obligation
   "⟨fun x z => graph_comp_iff Subtype.val (· ∣ ·) x z, ⟨4, rfl, by decide⟩,
     fun ⟨b, hb, h⟩ => by subst hb; exact absurd h (by decide)⟩"
-  #[``graph_comp_iff]
+  transfer.watched.toArray
 
 /-! Reasoning from scratch, without the earlier result. -/
 
@@ -40,7 +41,7 @@ citation like any other listed declaration. -/
     exact h
   · rintro ⟨b, rfl, h⟩
     revert h
-    decide" #[``graph_comp_iff]
+    decide" transfer.watched.toArray
 
 /-! ## Rejected -/
 

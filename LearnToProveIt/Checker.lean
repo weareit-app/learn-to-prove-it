@@ -46,7 +46,7 @@ public inductive Rejection where
 
 /-- A short, stable name for a rejection's kind. -/
 public meta def Rejection.kind : Rejection → String
-  | .unknownObligation n => s!"unknown obligation {n}"
+  | .unknownObligation _ => "unknown obligation"
   | .unparsable _ => "unparsable"
   | .illTyped _ => "ill-typed"
   | .incomplete => "incomplete"
@@ -60,6 +60,16 @@ public inductive Verdict where
   | accepted (axioms : Array Name) (cited : Array Name)
   | rejected (reason : Rejection)
   deriving Repr, BEq
+
+/-- One rejection of each kind, in declaration order. -/
+public meta def Rejection.samples : List Rejection :=
+  [.unknownObligation .anonymous, .unparsable "", .illTyped [], .incomplete,
+    .kernelRejected "", .disallowedAxioms #[]]
+
+/-- Whether the verdict accepts the submission. -/
+public meta def Verdict.isAccepted : Verdict → Bool
+  | .accepted .. => true
+  | .rejected _ => false
 
 /-- The axioms an accepted proof may depend on: Lean's standard three. -/
 public meta def allowedAxioms : Array Name := #[``propext, ``Classical.choice, ``Quot.sound]
