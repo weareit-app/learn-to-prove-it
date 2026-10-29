@@ -1,0 +1,310 @@
+{
+  "checker": {
+    "allowedAxioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "citations": "An accepted verdict lists the watched declarations (an exercise's supplied facts and revealing declarations) in the proof's dependency closure, found by declaration identity, and says whether that closure is complete. It is partial when the closure reaches a hidden body, as imported proofs are under the module system; an environment built with plain imports gives complete citations. A missing citation is not evidence that the learner derived the proof: an inline re-proof, a result not on the watched list that states the same thing, or a definitional (rfl) lemma that simp or dsimp uses without leaving it in the proof term, cites nothing.",
+    "declaration": "LearnToProveIt.checkSubmission",
+    "input": "The obligation's name, and Lean source for a term (a `by` block is a term) that proves it. The kernel checks the proof and every declaration its elaboration added, from the caller's environment, with kernel checking forced on.",
+    "sandbox": "Elaborating a submission runs arbitrary Lean, and the throwaway environment is not a security boundary. Real learner input goes through a sandboxed runner (lean-on-it) that checks each submission in a fresh process, bounded by wall-clock time and memory: a submission can poison process-wide caches and lift Lean's heartbeat limit. Nothing in this repository exposes the checker to untrusted input.",
+    "verdicts": [
+      "accepted",
+      "unknown obligation",
+      "unparsable",
+      "ill-typed",
+      "incomplete",
+      "kernel rejected",
+      "limit exceeded",
+      "disallowed axioms"
+    ]
+  },
+  "competencies": [
+    {
+      "id": "learn-to-prove-it:explain-function-graph",
+      "statement": "Explain the graph of a function as a relation that relates each input to exactly one output.",
+      "status": "proposed"
+    },
+    {
+      "id": "learn-to-prove-it:unpack-relational-composition",
+      "statement": "Unpack a relational composite into an existential statement about an intermediate element.",
+      "status": "proposed"
+    },
+    {
+      "id": "learn-to-prove-it:eliminate-witness-by-substitution",
+      "statement": "Eliminate an existential witness by substituting along an equation, and supply a witness explicitly.",
+      "status": "proposed"
+    },
+    {
+      "id": "learn-to-prove-it:restrict-relation-along-inclusion",
+      "statement": "Recognise composing with an inclusion's graph as restricting a relation to a subset, and apply it to an unseen example.",
+      "status": "proposed"
+    }
+  ],
+  "environment": {
+    "lean": "leanprover/lean4:v4.35.0",
+    "mathlib": "v4.35.0",
+    "mathlibCommit": "56a005855ea17e0b0958f73ec801ae140b0a1679",
+    "package": "learn_to_prove_it"
+  },
+  "exercises": [
+    {
+      "context": [],
+      "criteria": [
+        {
+          "decidedBy": "lean-checker",
+          "description": "A Lean proof of the obligation is accepted by the checker. This shows the mathematics of the formal answer is correct, and nothing about the learner's explanation.",
+          "id": "formal-proof"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "Explains that (a, b) is in the graph exactly when f(a) = b.",
+          "id": "explains-membership"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "Computes f(3) = 7, and so puts (3, 7) in the graph and (3, 8) outside it.",
+          "id": "classifies-pairs"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "Explains that f(3) is related to 3, and any b related to 3 equals f(3).",
+          "id": "explains-unique-output"
+        }
+      ],
+      "familySoundness": "LearnToProveIt.GraphComp.Comprehension.family_sound",
+      "id": "graph-comp.comprehension",
+      "mathematicalTarget": "The graph of f relates a to b exactly when f(a) = b, so it relates each input to exactly one output: f(a).",
+      "obligation": "LearnToProveIt.GraphComp.Comprehension.obligation",
+      "order": 1,
+      "parameters": [
+        {
+          "constraint": "any function",
+          "name": "f",
+          "value": "fun n : ℕ => 2 * n + 1"
+        },
+        {
+          "constraint": "any input",
+          "name": "a",
+          "value": "3"
+        },
+        {
+          "constraint": "f a = b",
+          "name": "b",
+          "value": "7"
+        },
+        {
+          "constraint": "f a ≠ b'",
+          "name": "b'",
+          "value": "8"
+        }
+      ],
+      "prompt": "Let f be the function on the natural numbers with f(n) = 2n + 1. Its graph is the relation that holds between a and b exactly when f(a) = b. Is the pair (3, 7) in the graph? Is (3, 8)? Explain why exactly one natural number is related to 3.",
+      "referenceSolution": "LearnToProveIt.GraphComp.Comprehension.solution",
+      "revealing": [
+        "LearnToProveIt.GraphComp.Comprehension.solution",
+        "LearnToProveIt.GraphComp.Comprehension.family_sound"
+      ],
+      "stage": "comprehension",
+      "statement": "((3 : ℕ), 7) ∈ Function.graph (fun n : ℕ => 2 * n + 1) ∧\n    ((3 : ℕ), 8) ∉ Function.graph (fun n : ℕ => 2 * n + 1) ∧\n    ∃! y, ((3 : ℕ), y) ∈ Function.graph (fun n : ℕ => 2 * n + 1)",
+      "status": {
+        "familySoundness": "lean-kernel-checked",
+        "referenceSolution": "lean-kernel-checked",
+        "statementFidelity": "not-reviewed"
+      },
+      "suppliedFacts": [],
+      "targets": [
+        "learn-to-prove-it:explain-function-graph"
+      ],
+      "title": "The graph of a function",
+      "version": "1.0.0"
+    },
+    {
+      "context": [
+        "learn-to-prove-it:explain-function-graph"
+      ],
+      "criteria": [
+        {
+          "decidedBy": "lean-checker",
+          "description": "A Lean proof of the obligation is accepted by the checker. This shows the mathematics of the formal answer is correct, and nothing about the learner's explanation.",
+          "id": "formal-proof"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "States that the composite relates a to c exactly when some b has f(a) = b and R(b, c).",
+          "id": "unpacks-existential"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "From f(a) = b and R(b, c), replaces b by f(a) to conclude R(f(a), c).",
+          "id": "substitutes-forward"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "For the converse, names f(a) as the intermediate element, with f(a) = f(a).",
+          "id": "supplies-witness"
+        }
+      ],
+      "familySoundness": null,
+      "id": "graph-comp.reasoning",
+      "mathematicalTarget": "(graph f ; R)(a, c) ↔ ∃ b, f(a) = b ∧ R(b, c) ↔ R(f(a), c): the equation f(a) = b lets b be replaced by f(a), and f(a) is the witness for the converse.",
+      "obligation": "LearnToProveIt.GraphComp.Reasoning.obligation",
+      "order": 2,
+      "parameters": [],
+      "prompt": "Let f : A → B be a function and R a relation from B to C. The composite of the graph of f with R relates a to c when there is some b with f(a) = b and R(b, c). Explain why this holds exactly when R(f(a), c). Say what the intermediate b must be in each direction.",
+      "referenceSolution": "LearnToProveIt.GraphComp.Reasoning.solution",
+      "revealing": [
+        "Relation.fun_eq_comp",
+        "LearnToProveIt.graph_comp_iff",
+        "LearnToProveIt.GraphComp.Reasoning.solution"
+      ],
+      "stage": "reasoning",
+      "statement": "∀ {α : Type u} {β : Type v} {γ : Type w} (f : α → β) (r : β → γ → Prop) (a : α) (c : γ), Relation.Comp (fun x y => f x = y) r a c ↔ r (f a) c",
+      "status": {
+        "familySoundness": "not-applicable",
+        "referenceSolution": "lean-kernel-checked",
+        "statementFidelity": "not-reviewed"
+      },
+      "suppliedFacts": [],
+      "targets": [
+        "learn-to-prove-it:unpack-relational-composition",
+        "learn-to-prove-it:eliminate-witness-by-substitution"
+      ],
+      "title": "Composing with a graph is substitution",
+      "version": "1.0.0"
+    },
+    {
+      "context": [
+        "learn-to-prove-it:explain-function-graph",
+        "learn-to-prove-it:unpack-relational-composition",
+        "learn-to-prove-it:eliminate-witness-by-substitution"
+      ],
+      "criteria": [
+        {
+          "decidedBy": "lean-checker",
+          "description": "A Lean proof of the obligation is accepted by the checker. This shows the mathematics of the formal answer is correct, and nothing about the learner's explanation.",
+          "id": "formal-proof"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "Identifies the function as the inclusion, which sends each even number to itself.",
+          "id": "identifies-inclusion"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "Concludes that the composite relates an even x to z exactly when x divides z.",
+          "id": "states-restriction"
+        },
+        {
+          "decidedBy": "learning-engine",
+          "description": "Shows 4 divides 12 and 4 does not divide 6, so 4 is related to 12 and not to 6.",
+          "id": "decides-instances"
+        }
+      ],
+      "familySoundness": "LearnToProveIt.GraphComp.Transfer.family_sound",
+      "id": "graph-comp.transfer",
+      "mathematicalTarget": "Composing the graph of a subset's inclusion with a relation R restricts R to the subset: x is related to z exactly when R(x, z).",
+      "obligation": "LearnToProveIt.GraphComp.Transfer.obligation",
+      "order": 3,
+      "parameters": [
+        {
+          "constraint": "any subset",
+          "name": "S",
+          "value": "{n : ℕ | Even n}"
+        },
+        {
+          "constraint": "any relation",
+          "name": "r",
+          "value": "(· ∣ ·)"
+        },
+        {
+          "constraint": "an element of S",
+          "name": "s",
+          "value": "4"
+        },
+        {
+          "constraint": "r s c",
+          "name": "c",
+          "value": "12"
+        },
+        {
+          "constraint": "¬ r s c'",
+          "name": "c'",
+          "value": "6"
+        }
+      ],
+      "prompt": "Let E be the set of even natural numbers, and i : E → ℕ the function that sends each even number to itself. Compose the graph of i with divisibility on ℕ. Which pairs does the composite relate? Is 4 related to 12? Is 4 related to 6? Explain.",
+      "referenceSolution": "LearnToProveIt.GraphComp.Transfer.solution",
+      "revealing": [
+        "LearnToProveIt.GraphComp.Transfer.solution",
+        "LearnToProveIt.GraphComp.Transfer.family_sound"
+      ],
+      "stage": "transfer",
+      "statement": "(∀ (x : {n : ℕ | Even n}) (z : ℕ),\n      Relation.Comp (fun (x : {n : ℕ | Even n}) y => (x : ℕ) = y) (· ∣ ·) x z ↔ (x : ℕ) ∣ z) ∧\n    Relation.Comp (fun (x : {n : ℕ | Even n}) y => (x : ℕ) = y) (· ∣ ·)\n      ⟨4, (⟨2, rfl⟩ : Even 4)⟩ 12 ∧\n    ¬ Relation.Comp (fun (x : {n : ℕ | Even n}) y => (x : ℕ) = y) (· ∣ ·)\n      ⟨4, (⟨2, rfl⟩ : Even 4)⟩ 6",
+      "status": {
+        "familySoundness": "lean-kernel-checked",
+        "referenceSolution": "lean-kernel-checked",
+        "statementFidelity": "not-reviewed"
+      },
+      "suppliedFacts": [
+        "LearnToProveIt.graph_comp_iff"
+      ],
+      "targets": [
+        "learn-to-prove-it:restrict-relation-along-inclusion"
+      ],
+      "title": "Restricting along an inclusion",
+      "version": "1.0.0"
+    }
+  ],
+  "id": "learn-to-prove-it:graph-comp",
+  "mathlibReuse": [
+    {
+      "declaration": "Relation.fun_eq_comp",
+      "use": "States the reasoning exercise's result as an equation of relations. graph_comp_iff is its pointwise form, kept as a reference solution, not a new result."
+    },
+    {
+      "declaration": "Relation.Comp",
+      "use": "Relational composition, used directly."
+    },
+    {
+      "declaration": "Function.graph",
+      "use": "The graph of a function, used directly in the comprehension exercise."
+    },
+    {
+      "declaration": "Function.mem_graph",
+      "use": "Membership in a graph is the equation f a = b."
+    },
+    {
+      "declaration": "SetRel.restrictDomain",
+      "use": "The restriction of a relation to a subtype, for relations as sets of pairs. The transfer exercise's composite is the same restriction for predicates."
+    }
+  ],
+  "provenance": {
+    "design": "prove.how v0.6 first theorem test, track A, and its learning-evidence trial",
+    "licence": "Apache-2.0",
+    "sources": [
+      {
+        "author": "Jencel Panic",
+        "edition": "web edition",
+        "licence": "Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)",
+        "licenceEvidence": "Stated on the web edition's index page and chapter pages. The source repository has no licence file.",
+        "licenceUrl": "http://creativecommons.org/licenses/by-nc/4.0/",
+        "locator": "Chapter \"Sets\", sections \"Functions\" and \"Functions and Subsets\"",
+        "locatorUrl": "https://abuseofnotation.github.io/category-theory-illustrated/01_set/",
+        "retrieved": "2026-10-28",
+        "revision": "github.com/abuseofnotation/category-theory-illustrated at commit 8378ac8ccbc7eeaab4cce75402819a320566fdc7, the source of the site when retrieved",
+        "title": "Category Theory Illustrated",
+        "transformation": "independently_derived",
+        "url": "https://abuseofnotation.github.io/category-theory-illustrated/",
+        "use": "Instructional inspiration only: functions between sets, and the function sending each element of a subset to itself. No text, illustrations or exercises are reproduced. The source has no section on graphs of functions; the exercises are written here."
+      }
+    ],
+    "transformation": "independently_derived"
+  },
+  "schema": "learn-to-prove-it/exercise-family-export",
+  "schemaVersion": "0.1.0",
+  "scope": "Mathematical correctness only. Lean checks each obligation's reference solution, and the checker decides whether a submitted Lean proof is correct. Nothing here asserts anything about a learner's comprehension or mastery: criteria decided by the learning engine are for it to evaluate, with its own attribution of the evidence.",
+  "title": "Composing a relation with a function's graph",
+  "version": "0.1.0"
+}

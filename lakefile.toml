@@ -1,5 +1,6 @@
 name = "learn_to_prove_it"
 defaultTargets = ["LearnToProveIt"]
+testDriver = "LearnToProveItTest"
 
 [[require]]
 name = "mathlib"
@@ -8,3 +9,15 @@ rev = "v4.35.0"
 
 [[lean_lib]]
 name = "LearnToProveIt"
+
+# Tests are Lean files whose `#guard_msgs` checks fail the build; `lake test`
+# builds them all. `LearnToProveItTest.FullEnvironment` is not a module, so no
+# module imports it; the glob builds it.
+[[lean_lib]]
+name = "LearnToProveItTest"
+globs = ["LearnToProveItTest", "LearnToProveItTest.+"]
+
+# Prints the exercise metadata that prove.how reads, as JSON.
+[[lean_exe]]
+name = "export-exercise-metadata"
+root = "ExportExerciseMetadata"
