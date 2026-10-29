@@ -80,3 +80,40 @@ command is elaborated, which a submission is not. -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Reasoning.obligation
   "fun f r a c => let rec g : Nat → Nat | 0 => 0 | n + 1 => g n; graph_comp_iff f r a c"
+
+/-! ## From the second review -/
+
+/-! A resource limit a tactic catches and logs is still a resource limit. -/
+
+/-- info: "rejected: limit exceeded" -/
+#guard_msgs in
+#eval summary <$> checkSubmission ``Reasoning.obligation
+  "have _ : (List.range 200).foldl (· + ·) 0 = 19900 := by decide
+  fun f r a c => graph_comp_iff f r a c"
+
+/-! A submission that declares the checker's own theorem name, through a
+metaprogram, does not make a correct proof rejected. -/
+
+/-- info: "accepted; axioms: []; cites: [] (citations partial)" -/
+#guard_msgs in
+#eval summary <$> checkSubmission ``Reasoning.obligation
+  ("by (run_tac Lean.addDecl (.thmDecl { name := `_learnToProveIt_submission, " ++
+    "levelParams := [], type := Lean.mkConst ``True, value := Lean.mkConst ``True.intro })); " ++
+    "exact fun f r a c => graph_comp_iff f r a c")
+
+/-! The info trees and snapshot tasks a submission's elaboration creates stay
+inside the check, so no linter warning or reported message reaches the caller.
+(`#guard_msgs` cannot see these, so the test counts them.) -/
+
+/-- info: (true, true) -/
+#guard_msgs in
+#eval show Lean.CoreM (Bool × Bool) from do
+  let trees := (← get).infoState.trees.size
+  let snapshots := (← get).snapshotTasks.size
+  discard <| checkSubmission ``Reasoning.obligation
+    "by intro α β γ f r a c; simp [Relation.Comp, Nat.add_comm]"
+  discard <| checkSubmission ``Reasoning.obligation
+    ("by (run_tac Lean.Core.logSnapshotTask { stx? := none, task := .pure { " ++
+      "element := { diagnostics := .empty }, children := #[] } }); " ++
+      "exact fun f r a c => graph_comp_iff f r a c")
+  return ((← get).infoState.trees.size == trees, (← get).snapshotTasks.size == snapshots)

@@ -191,7 +191,9 @@ public def graphComp : ExerciseFamily where
       that simp or dsimp uses without leaving it in the proof term, cites nothing."
     sandbox := "Elaborating a submission runs arbitrary Lean, and the throwaway environment \
       is not a security boundary. Real learner input goes through a sandboxed runner \
-      (lean-on-it). Nothing in this repository exposes the checker to untrusted input." }
+      (lean-on-it) that checks each submission in a fresh process, bounded by wall-clock \
+      time and memory: a submission can poison process-wide caches and lift Lean's \
+      heartbeat limit. Nothing in this repository exposes the checker to untrusted input." }
   provenance := {
     transformation := "independently_derived"
     licence := "Apache-2.0"

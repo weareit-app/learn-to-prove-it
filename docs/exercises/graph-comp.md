@@ -70,7 +70,12 @@ Even complete citations cover only what is on the watched list and appears in th
 
 ### Untrusted input
 
-Elaborating a submission runs arbitrary Lean, tactics included, with effects outside Lean's environment. Restoring the environment, message log and trace state afterwards is hygiene, not a security boundary. `LearnToProveItTest/Adversarial.lean` holds the attacks an independent review found: turning the kernel off, exhausting recursion depth, leaking traces, `let rec`, and a clashing declaration name. Real learner input goes through a sandboxed runner (`lean-on-it`). Until that integration lands, nothing in this repository exposes the checker to untrusted input: the only executable prints metadata.
+Elaborating a submission runs arbitrary Lean, tactics included, with effects outside Lean's environment. Restoring the environment, message log and trace state afterwards is hygiene, not a security boundary. `LearnToProveItTest/Adversarial.lean` holds the attacks two independent reviews found: turning the kernel off, exhausting recursion depth, a resource limit a tactic catches, leaking traces, info trees and snapshot tasks, `let rec`, and clashing declaration names. Real learner input goes through a sandboxed runner (`lean-on-it`). That runner must also:
+
+- **Use one process per submission.** A metaprogram in a submission (`run_tac`) can poison process-wide state that no environment restore reaches, such as Lean's cache of realized constants. A later honest submission in the same process could then be wrongly rejected.
+- **Bound wall-clock time and memory.** A submission can lift Lean's own limit with `set_option maxHeartbeats 0`.
+
+Neither yields a wrong acceptance, because the kernel pass starts from the caller's environment. Until that integration lands, nothing in this repository exposes the checker to untrusted input: the only executable prints metadata.
 
 ## The exported metadata
 

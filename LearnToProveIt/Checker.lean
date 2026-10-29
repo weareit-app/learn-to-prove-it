@@ -24,6 +24,13 @@ outside Lean's environment. `withoutModifyingEnv` restores the environment; it
 is not a security boundary. Real learner input must go through a sandboxed
 runner (`lean-on-it`). Until that integration lands, nothing in this repository
 (no executable, server or tool) calls the checker on untrusted input.
+
+The runner must also check each submission in a fresh process, and bound it by
+wall-clock time and memory. A metaprogram in a submission can poison
+process-wide state that no environment restore reaches, such as the cache of
+realized constants (so a later honest submission is wrongly rejected), and can
+lift Lean's own heartbeat limit with `set_option maxHeartbeats 0`. Neither
+yields a wrong acceptance: the kernel pass starts from the caller's environment.
 -/
 
 namespace LearnToProveIt
@@ -131,6 +138,20 @@ meta def declarationOf? : ConstantInfo → Option Declaration
   | .axiomInfo v => some (.axiomDecl v)
   | _ => none
 
+/-- Whether an error message reports a resource limit rather than a mistake:
+elaboration logs one when a tactic catches the limit's exception. -/
+meta def isLimitMessage (msg : String) : Bool :=
+  ["maximum recursion depth", "deterministic timeout", "maxHeartbeats", "deep recursion",
+    "excessive memory"].any fun pat => (msg.splitOn pat).length > 1
+
+/-- A kernel failure as a rejection: a resource limit, or a proof the kernel
+refuses. -/
+meta def kernelRejection (e : Kernel.Exception) (opts : Options) : CoreM Rejection := do
+  let msg ← (e.toMessageData opts).toString
+  return match e with
+    | .deterministicTimeout | .excessiveMemory | .deepRecursion => .limitExceeded msg
+    | _ => .kernelRejected msg
+
 /-- A name for the submission's theorem that `env` does not already use,
 publicly or privately. -/
 meta def freshSubmissionName (env : Environment) : Name := Id.run do
@@ -160,7 +181,7 @@ nothing, so a missing citation is not evidence that the learner derived the
 proof independently. Citations are complete only in an environment holding the
 bodies of every declaration the proof depends on, such as one built by a plain
 (non-module) `import`; the verdict says whether they are. Leaves the environment,
-message log and trace state as it found them. Running out of heartbeats or
+message log, trace state, info trees and snapshot tasks as it found them. Running out of heartbeats or
 recursion depth is a rejection; an interrupt still propagates. -/
 public meta def checkSubmission (obligation : Name) (submission : String)
     (watched : Array Name := #[]) : CoreM Verdict := do
@@ -173,6 +194,8 @@ public meta def checkSubmission (obligation : Name) (submission : String)
     | .error msg => return .rejected (.unparsable msg)
   let savedLog ← Core.getMessageLog
   let savedTraces ← getTraceState
+  let savedInfo := (← get).infoState
+  let savedSnapshots := (← get).snapshotTasks
   Core.resetMessageLog
   try
     withoutModifyingEnv <| withOptions (debug.skipKernelTC.set · false) do
@@ -191,14 +214,19 @@ public meta def checkSubmission (obligation : Name) (submission : String)
       let errors ← (← Core.getMessageLog).toList.filter (·.severity == .error)
         |>.mapM (·.data.toString)
       let value ← match elaborated with
-        | .error (.illTyped msgs) => return .rejected (.illTyped (errors ++ msgs))
+        | .error (.illTyped msgs) =>
+          let msgs := errors ++ msgs
+          return .rejected <| if msgs.any isLimitMessage then .limitExceeded (msgs.head?.getD "")
+            else .illTyped msgs
         | .error reason => return .rejected reason
         | .ok value =>
+          if errors.any isLimitMessage then return .rejected (.limitExceeded (errors.head?.getD ""))
           if !errors.isEmpty then return .rejected (.illTyped errors)
           pure value
       if value.hasSorry || value.hasMVar then return .rejected .incomplete
       let added := addedSince base (← getEnv)
-      let name := freshSubmissionName base
+      -- Fresh in the elaborated environment, which includes the caller's.
+      let name := freshSubmissionName (← getEnv)
       let mut decls := #[]
       for info in added do
         let some d := declarationOf? info
@@ -212,7 +240,7 @@ public meta def checkSubmission (obligation : Name) (submission : String)
       for d in decls do
         match kernel.addDecl opts d with
         | .ok k => kernel := k
-        | .error e => return .rejected (.kernelRejected (← (e.toMessageData opts).toString))
+        | .error e => return .rejected (← kernelRejection e opts)
       -- Already checked: add them to the elaboration environment for the axiom
       -- and citation walks.
       setEnv base
@@ -226,5 +254,6 @@ public meta def checkSubmission (obligation : Name) (submission : String)
   finally
     Core.setMessageLog savedLog
     setTraceState savedTraces
+    modify fun s => { s with infoState := savedInfo, snapshotTasks := savedSnapshots }
 
 end LearnToProveIt
