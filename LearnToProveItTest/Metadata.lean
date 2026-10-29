@@ -17,7 +17,7 @@ open Lean Elab Meta LearnToProveIt GraphComp
 /-- One rejection of each kind, in declaration order. -/
 meta def rejectionSamples : List Rejection :=
   [.unknownObligation .anonymous, .unparsable "", .illTyped [], .incomplete,
-    .kernelRejected "", .disallowedAxioms #[]]
+    .kernelRejected "", .limitExceeded "", .disallowedAxioms #[]]
 
 /-- Every problem found with `family`'s metadata, empty if there are none. -/
 meta def problems (family : ExerciseFamily) : MetaM (List String) := do

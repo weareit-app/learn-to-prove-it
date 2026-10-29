@@ -120,3 +120,12 @@ witness of the right type.) -/
 #eval show Lean.CoreM Bool from do
   discard <| checkSubmission ``Reasoning.obligation "fun f r a c => graph_comp_iff f r a c"
   return (← Lean.getEnv).contains submissionName
+
+/-! A declaration already named like the checker's throwaway theorem does not
+stop a correct proof being accepted. -/
+
+theorem _learnToProveIt_submission : True := trivial
+
+/-- info: "accepted; axioms: []; cites: [] (citations partial)" -/
+#guard_msgs in
+#eval summary <$> checkSubmission ``Reasoning.obligation "fun f r a c => graph_comp_iff f r a c"

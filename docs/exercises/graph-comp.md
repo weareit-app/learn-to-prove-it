@@ -49,7 +49,7 @@ The checker decides one thing: whether a Lean proof of an exercise's obligation 
 
 ## The checker
 
-`LearnToProveIt.checkSubmission obligation source watched` parses `source` as a Lean term (a `by` block is a term) and elaborates it against the obligation's proposition. It adds the result as a theorem to a throwaway copy of the environment, so the kernel checks it, and collects its axioms. The verdict is one of:
+`LearnToProveIt.checkSubmission obligation source watched` parses `source` as a Lean term (a `by` block is a term) and elaborates it against the obligation's proposition. It then resets to the caller's environment and has the kernel check, synchronously and with checking forced on, every declaration elaboration added (auxiliary lemmas, for example) followed by the proof itself. Only then does it collect the proof's axioms. A submission that turns the kernel off for its own auxiliary lemmas (`set_option debug.skipKernelTC true in …`) gains nothing, and neither does a caller's option. The verdict is one of:
 
 | Verdict | Meaning |
 |---|---|
@@ -58,18 +58,19 @@ The checker decides one thing: whether a Lean proof of an exercise's obligation 
 | `unparsable` | The text is not a Lean term |
 | `ill-typed` | The term does not elaborate to a proof of the obligation |
 | `incomplete` | The term contains `sorry` or an unfilled hole |
-| `kernel rejected` | The kernel refused the elaborated proof |
+| `kernel rejected` | The kernel refused the elaborated proof, or a declaration its elaboration added |
+| `limit exceeded` | Checking ran out of heartbeats or recursion depth |
 | `disallowed axioms` | The proof uses an axiom other than `propext`, `Classical.choice`, `Quot.sound` (for example through `native_decide`) |
 
 ### What citations cover
 
 `cited` lists the watched declarations in the proof's whole dependency closure, directly or through other theorems, matched by declaration identity. The closure can only be followed where the environment holds the bodies. Under the module system an imported theorem's proof is hidden (it appears as an axiom), so the verdict's `citationsComplete` flag is false whenever the closure reaches one, and a watched declaration behind it would be missed. A checking environment built with plain (non-module) imports holds every body and gives complete citations; `LearnToProveItTest/FullEnvironment.lean` tests this, including a revealing result reached through two wrapper theorems.
 
-Even complete citations cover only what is on the watched list. A proof that re-proves a result inline, or uses an unlisted result that states the same thing, cites nothing. A missing citation is therefore not evidence that the learner derived the proof independently.
+Even complete citations cover only what is on the watched list and appears in the proof's dependencies. A proof that re-proves a result inline, uses an unlisted result that states the same thing, or uses a definitional (`rfl`) lemma that `simp` or `dsimp` applies without leaving it in the proof term, cites nothing. A missing citation is therefore not evidence that the learner derived the proof independently.
 
 ### Untrusted input
 
-Elaborating a submission runs arbitrary Lean, tactics included, with effects outside Lean's environment. Restoring the environment afterwards is not a security boundary. Real learner input goes through a sandboxed runner (`lean-on-it`). Until that integration lands, nothing in this repository exposes the checker to untrusted input: the only executable prints metadata.
+Elaborating a submission runs arbitrary Lean, tactics included, with effects outside Lean's environment. Restoring the environment, message log and trace state afterwards is hygiene, not a security boundary. `LearnToProveItTest/Adversarial.lean` holds the attacks an independent review found: turning the kernel off, exhausting recursion depth, leaking traces, `let rec`, and a clashing declaration name. Real learner input goes through a sandboxed runner (`lean-on-it`). Until that integration lands, nothing in this repository exposes the checker to untrusted input: the only executable prints metadata.
 
 ## The exported metadata
 

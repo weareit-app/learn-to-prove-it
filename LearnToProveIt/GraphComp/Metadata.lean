@@ -176,17 +176,19 @@ public def graphComp : ExerciseFamily where
   checker := {
     declaration := `LearnToProveIt.checkSubmission
     input := "The obligation's name, and Lean source for a term (a `by` block is a term) \
-      that proves it."
+      that proves it. The kernel checks the proof and every declaration its elaboration \
+      added, from the caller's environment, with kernel checking forced on."
     allowedAxioms := [`propext, `Classical.choice, `Quot.sound]
     verdicts := ["accepted", "unknown obligation", "unparsable", "ill-typed", "incomplete",
-      "kernel rejected", "disallowed axioms"]
+      "kernel rejected", "limit exceeded", "disallowed axioms"]
     citations := "An accepted verdict lists the watched declarations (an exercise's supplied \
       facts and revealing declarations) in the proof's dependency closure, found by \
       declaration identity, and says whether that closure is complete. It is partial when \
       the closure reaches a hidden body, as imported proofs are under the module system; \
       an environment built with plain imports gives complete citations. A missing citation \
-      is not evidence that the learner derived the proof: an inline re-proof, or a result \
-      not on the watched list that states the same thing, cites nothing."
+      is not evidence that the learner derived the proof: an inline re-proof, a result \
+      not on the watched list that states the same thing, or a definitional (rfl) lemma \
+      that simp or dsimp uses without leaving it in the proof term, cites nothing."
     sandbox := "Elaborating a submission runs arbitrary Lean, and the throwaway environment \
       is not a security boundary. Real learner input goes through a sandboxed runner \
       (lean-on-it). Nothing in this repository exposes the checker to untrusted input." }
