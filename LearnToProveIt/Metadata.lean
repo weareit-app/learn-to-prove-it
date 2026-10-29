@@ -113,7 +113,8 @@ public structure Exercise where
   context : List String
   /-- Earlier results the learner may use. -/
   suppliedFacts : List Name
-  /-- Library results that already state the answer. Citing one is correct
+  /-- Results that already state the answer: library results, and this
+  exercise's own reference solution and soundness theorem. Citing one is correct
   mathematics; what it says about the learner is the engine's call. -/
   revealing : List Name
   status : Status

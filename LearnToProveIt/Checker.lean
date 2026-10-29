@@ -55,16 +55,11 @@ public meta def Rejection.kind : Rejection → String
 
 /-- The checker's verdict on a submission. -/
 public inductive Verdict where
-  /-- A correct proof, with the axioms it depends on and the revealing
+  /-- A correct proof, with the axioms it depends on and the watched
   declarations it refers to. -/
   | accepted (axioms : Array Name) (cited : Array Name)
   | rejected (reason : Rejection)
   deriving Repr, BEq
-
-/-- One rejection of each kind, in declaration order. -/
-public meta def Rejection.samples : List Rejection :=
-  [.unknownObligation .anonymous, .unparsable "", .illTyped [], .incomplete,
-    .kernelRejected "", .disallowedAxioms #[]]
 
 /-- Whether the verdict accepts the submission. -/
 public meta def Verdict.isAccepted : Verdict → Bool
@@ -95,11 +90,11 @@ where
     if next.isEmpty then seen else go next seen
 
 /-- Check `submission`, Lean source for a term, as a proof of the proposition
-defined by `obligation`. Reports which of `revealing` (library results that
-already state the answer) the proof refers to. Leaves the environment and
+defined by `obligation`. Reports which of `watched` (for an exercise, its
+supplied facts and revealing declarations) the proof refers to. Leaves the environment and
 message log as it found them. -/
 public meta def checkSubmission (obligation : Name) (submission : String)
-    (revealing : Array Name := #[]) : CoreM Verdict := do
+    (watched : Array Name := #[]) : CoreM Verdict := do
   let base ← getEnv
   let some (.defnInfo info) := base.find? obligation
     | return .rejected (.unknownObligation obligation)
@@ -134,7 +129,7 @@ public meta def checkSubmission (obligation : Name) (submission : String)
       let disallowed := axioms.filter (!allowedAxioms.contains ·)
       if !disallowed.isEmpty then return .rejected (.disallowedAxioms disallowed)
       let used := referencedConstants base (← getEnv) value
-      return .accepted axioms (revealing.filter used.contains)
+      return .accepted axioms (watched.filter used.contains)
   finally
     Core.setMessageLog savedLog
 

@@ -100,7 +100,10 @@
       ],
       "prompt": "Let f be the function on the natural numbers with f(n) = 2n + 1. Its graph is the relation that holds between a and b exactly when f(a) = b. Is the pair (3, 7) in the graph? Is (3, 8)? Explain why exactly one natural number is related to 3.",
       "referenceSolution": "LearnToProveIt.GraphComp.Comprehension.solution",
-      "revealing": [],
+      "revealing": [
+        "LearnToProveIt.GraphComp.Comprehension.solution",
+        "LearnToProveIt.GraphComp.Comprehension.family_sound"
+      ],
       "stage": "comprehension",
       "statement": "((3 : ℕ), 7) ∈ Function.graph (fun n : ℕ => 2 * n + 1) ∧\n    ((3 : ℕ), 8) ∉ Function.graph (fun n : ℕ => 2 * n + 1) ∧\n    ∃! y, ((3 : ℕ), y) ∈ Function.graph (fun n : ℕ => 2 * n + 1)",
       "status": {
@@ -151,7 +154,8 @@
       "referenceSolution": "LearnToProveIt.GraphComp.Reasoning.solution",
       "revealing": [
         "Relation.fun_eq_comp",
-        "LearnToProveIt.graph_comp_iff"
+        "LearnToProveIt.graph_comp_iff",
+        "LearnToProveIt.GraphComp.Reasoning.solution"
       ],
       "stage": "reasoning",
       "statement": "∀ {α : Type u} {β : Type v} {γ : Type w} (f : α → β) (r : β → γ → Prop) (a : α) (c : γ), Relation.Comp (fun x y => f x = y) r a c ↔ r (f a) c",
@@ -230,7 +234,10 @@
       ],
       "prompt": "Let E be the set of even natural numbers, and i : E → ℕ the function that sends each even number to itself. Compose the graph of i with divisibility on ℕ. Which pairs does the composite relate? Is 4 related to 12? Is 4 related to 6? Explain.",
       "referenceSolution": "LearnToProveIt.GraphComp.Transfer.solution",
-      "revealing": [],
+      "revealing": [
+        "LearnToProveIt.GraphComp.Transfer.solution",
+        "LearnToProveIt.GraphComp.Transfer.family_sound"
+      ],
       "stage": "transfer",
       "statement": "(∀ (x : {n : ℕ | Even n}) (z : ℕ),\n      Relation.Comp (fun (x : {n : ℕ | Even n}) y => (x : ℕ) = y) (· ∣ ·) x z ↔ (x : ℕ) ∣ z) ∧\n    Relation.Comp (fun (x : {n : ℕ | Even n}) y => (x : ℕ) = y) (· ∣ ·)\n      ⟨4, (⟨2, rfl⟩ : Even 4)⟩ 12 ∧\n    ¬ Relation.Comp (fun (x : {n : ℕ | Even n}) y => (x : ℕ) = y) (· ∣ ·)\n      ⟨4, (⟨2, rfl⟩ : Even 4)⟩ 6",
       "status": {

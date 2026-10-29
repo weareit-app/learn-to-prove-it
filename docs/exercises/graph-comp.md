@@ -95,7 +95,7 @@ Elaborating a submission runs arbitrary Lean, tactics included. Real learner inp
 | `criteria` | Evaluation criteria, each `decidedBy` `lean-checker` or `learning-engine` |
 | `targets`, `context` | Competencies the exercise gives evidence about, and those it only relies on |
 | `suppliedFacts` | Earlier results the learner may use |
-| `revealing` | Library results that already state the answer |
+| `revealing` | Results that already state the answer: library results, and the exercise's own reference solution and soundness theorem |
 | `status` | Typed statuses: `referenceSolution`, `familySoundness`, `statementFidelity` (`not-reviewed` until an independent review). There is no single `verified` flag |
 
 Pass `suppliedFacts` and `revealing` as the checker's `watched` list: an accepted verdict then reports which of them the proof used.
@@ -133,7 +133,11 @@ Pass `suppliedFacts` and `revealing` as the checker's `watched` list: an accepte
   "order": 2,
   "parameters": [],
   "referenceSolution": "LearnToProveIt.GraphComp.Reasoning.solution",
-  "revealing": ["Relation.fun_eq_comp", "LearnToProveIt.graph_comp_iff"],
+  "revealing": [
+    "Relation.fun_eq_comp",
+    "LearnToProveIt.graph_comp_iff",
+    "LearnToProveIt.GraphComp.Reasoning.solution"
+  ],
   "stage": "reasoning",
   "statement": "∀ {α : Type u} {β : Type v} {γ : Type w} (f : α → β) (r : β → γ → Prop) (a : α) (c : γ), Relation.Comp (fun x y => f x = y) r a c ↔ r (f a) c",
   "status": {

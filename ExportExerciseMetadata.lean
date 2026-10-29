@@ -28,6 +28,7 @@ partial def render (j : Json) (indent : String := "") : String :=
 /-- The JSON document, ending in a newline. -/
 def rendered : String := render (toJson GraphComp.graphComp) ++ "\n"
 
+/-- Print the metadata, or check `FILE` against it. -/
 public def main : List String → IO UInt32
   | [] => do
     IO.print rendered

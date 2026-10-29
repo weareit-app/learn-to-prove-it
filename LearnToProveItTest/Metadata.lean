@@ -14,6 +14,11 @@ edited statement breaks the build instead of the fixture going stale.
 
 open Lean Elab Meta LearnToProveIt GraphComp
 
+/-- One rejection of each kind, in declaration order. -/
+meta def rejectionSamples : List Rejection :=
+  [.unknownObligation .anonymous, .unparsable "", .illTyped [], .incomplete,
+    .kernelRejected "", .disallowedAxioms #[]]
+
 /-- Every problem found with `family`'s metadata, empty if there are none. -/
 meta def problems (family : ExerciseFamily) : MetaM (List String) := do
   let env ← getEnv
@@ -23,7 +28,7 @@ meta def problems (family : ExerciseFamily) : MetaM (List String) := do
     unless exists_ reuse.declaration do out := out ++ [s!"missing reused {reuse.declaration}"]
   unless family.checker.allowedAxioms == allowedAxioms.toList do
     out := out ++ ["allowed axioms differ from the checker's"]
-  unless family.checker.verdicts == "accepted" :: Rejection.samples.map (·.kind) do
+  unless family.checker.verdicts == "accepted" :: rejectionSamples.map (·.kind) do
     out := out ++ ["verdicts differ from the checker's"]
   unless family.environment.lean == s!"leanprover/lean4:v{Lean.versionString}" do
     out := out ++ [s!"Lean version {family.environment.lean} is not {Lean.versionString}"]
@@ -38,8 +43,15 @@ meta def problems (family : ExerciseFamily) : MetaM (List String) := do
       unless info.type.isConstOf ex.obligation do
         out := out ++ [s!"{ex.id}: reference solution does not prove {ex.obligation}"]
     | none => out := out ++ [s!"{ex.id}: no reference solution {ex.referenceSolution}"]
+    -- A soundness theorem concludes with the exercise's family.
     if let some sound := ex.familySoundness then
-      unless exists_ sound do out := out ++ [s!"{ex.id}: no soundness theorem {sound}"]
+      match env.find? sound with
+      | some info =>
+        let family := ex.obligation.getPrefix ++ `family
+        let concl ← forallTelescope info.type fun _ body => pure body
+        unless concl.getAppFn.isConstOf family do
+          out := out ++ [s!"{ex.id}: {sound} does not conclude with {family}"]
+      | none => out := out ++ [s!"{ex.id}: no soundness theorem {sound}"]
     for n in ex.suppliedFacts ++ ex.revealing do
       unless exists_ n do out := out ++ [s!"{ex.id}: no declaration {n}"]
     -- The statement shown is, up to reducible unfolding, the one Lean checks.
@@ -62,6 +74,19 @@ meta def problems (family : ExerciseFamily) : MetaM (List String) := do
 /-- info: [] -/
 #guard_msgs in
 #eval problems graphComp
+
+/-! The Mathlib pin is the one in `lake-manifest.json` (Lake builds tests from
+the package root). -/
+
+/-- info: true -/
+#guard_msgs in
+#eval show IO Bool from do
+  let manifest ← IO.ofExcept <| Json.parse (← IO.FS.readFile "lake-manifest.json")
+  let packages ← IO.ofExcept <| manifest.getObjValAs? (Array Json) "packages"
+  let some mathlib := packages.find? (·.getObjValAs? String "name" == .ok "mathlib")
+    | return false
+  return mathlib.getObjValAs? String "rev" == .ok graphComp.environment.mathlibCommit &&
+    mathlib.getObjValAs? String "inputRev" == .ok graphComp.environment.mathlib
 
 /-! The exercises run in order: comprehension, reasoning, transfer. -/
 

@@ -14,8 +14,8 @@ submission, as source text, and the checker's verdict on it.
 
 open LearnToProveIt GraphComp
 
-/-- The declarations whose use the checker reports: here, library results that
-already state the answer. -/
+/-- The declarations whose use the checker reports: here, results that already
+state the answer. -/
 meta def revealing : Array Lean.Name := reasoning.watched.toArray
 
 /-! ## Accepted -/
@@ -51,7 +51,9 @@ about the learner is for the learning engine to decide. -/
 
 /-! ## Rejected -/
 
-/-! The witness must be `f a`, an element of the codomain, not `a`. -/
+/-! The witness must be `f a`, an element of the codomain, not `a`. (Here no
+other element of the codomain is in scope; the transfer tests give a wrong
+witness of the right type.) -/
 
 /-- info: "rejected: ill-typed" -/
 #guard_msgs in

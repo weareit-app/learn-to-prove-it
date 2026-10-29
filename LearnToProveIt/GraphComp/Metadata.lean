@@ -15,10 +15,15 @@ namespace LearnToProveIt.GraphComp
 
 open Lean
 
-/-- Competency IDs, proposed in this repository's namespace. -/
+/-! Competency IDs, proposed in this repository's namespace. -/
+
+/-- Explaining a function's graph as a relation. -/
 def explainGraph := "learn-to-prove-it:explain-function-graph"
+/-- Unpacking a relational composite into an existential. -/
 def unpackComposition := "learn-to-prove-it:unpack-relational-composition"
+/-- Eliminating, or supplying, an existential witness. -/
 def substituteWitness := "learn-to-prove-it:eliminate-witness-by-substitution"
+/-- Composing with an inclusion's graph as restriction. -/
 def restrictAlongInclusion := "learn-to-prove-it:restrict-relation-along-inclusion"
 
 /-- The criterion every exercise shares: the Lean checker accepts a formal
@@ -65,7 +70,8 @@ public def comprehension : Exercise where
   targets := [explainGraph]
   context := []
   suppliedFacts := []
-  revealing := []
+  revealing := [`LearnToProveIt.GraphComp.Comprehension.solution,
+    `LearnToProveIt.GraphComp.Comprehension.family_sound]
   status := { familySoundness := "lean-kernel-checked" }
 
 /-- Exercise 2: composition with a function's graph is substitution. -/
@@ -102,7 +108,8 @@ public def reasoning : Exercise where
   targets := [unpackComposition, substituteWitness]
   context := [explainGraph]
   suppliedFacts := []
-  revealing := [`Relation.fun_eq_comp, `LearnToProveIt.graph_comp_iff]
+  revealing := [`Relation.fun_eq_comp, `LearnToProveIt.graph_comp_iff,
+    `LearnToProveIt.GraphComp.Reasoning.solution]
   status := { familySoundness := "not-applicable" }
 
 /-- Exercise 3: restricting a relation along an inclusion. -/
@@ -148,7 +155,8 @@ public def transfer : Exercise where
   targets := [restrictAlongInclusion]
   context := [explainGraph, unpackComposition, substituteWitness]
   suppliedFacts := [`LearnToProveIt.graph_comp_iff]
-  revealing := []
+  revealing := [`LearnToProveIt.GraphComp.Transfer.solution,
+    `LearnToProveIt.GraphComp.Transfer.family_sound]
   status := { familySoundness := "lean-kernel-checked" }
 
 /-- The family. -/

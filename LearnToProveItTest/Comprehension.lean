@@ -1,6 +1,7 @@
 module
 
 public meta import LearnToProveIt.Checker
+public meta import LearnToProveIt.GraphComp.Metadata
 public import LearnToProveIt.GraphComp.Comprehension
 public import LearnToProveItTest.Summary
 
@@ -38,7 +39,14 @@ example : Comprehension.obligation = Comprehension.family (fun n : ℕ => 2 * n 
 /-- info: "rejected: ill-typed" -/
 #guard_msgs in
 #eval summary <$> checkSubmission ``Comprehension.obligation
-  "⟨rfl, rfl, ⟨7, rfl, fun _ h => h.symm⟩⟩"
+  "⟨(rfl : 2 * 3 + 1 = 8), (fun h => nomatch h), ⟨7, rfl, fun _ h => h.symm⟩⟩"
+
+/-! Citing the exercise's own answer key is accepted and reported. -/
+
+/-- info: "accepted; axioms: []; cites: [LearnToProveIt.GraphComp.Comprehension.solution]" -/
+#guard_msgs in
+#eval summary <$> checkSubmission ``Comprehension.obligation "Comprehension.solution"
+  comprehension.watched.toArray
 
 /-! The wrong output as the unique one. -/
 
