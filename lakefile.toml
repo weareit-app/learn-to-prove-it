@@ -1,5 +1,6 @@
 name = "learn_to_prove_it"
 defaultTargets = ["LearnToProveIt"]
+testDriver = "LearnToProveItTest"
 
 [[require]]
 name = "mathlib"
@@ -8,3 +9,8 @@ rev = "v4.35.0"
 
 [[lean_lib]]
 name = "LearnToProveIt"
+
+# Tests are Lean files whose `#guard_msgs` checks fail the build; `lake test`
+# builds them.
+[[lean_lib]]
+name = "LearnToProveItTest"

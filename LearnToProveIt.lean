@@ -1,3 +1,4 @@
 module
 
-public import LearnToProveIt.Basic
+public import LearnToProveIt.Checker
+public import LearnToProveIt.GraphComp.Reasoning

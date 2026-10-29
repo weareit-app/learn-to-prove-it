@@ -12,3 +12,7 @@ Decided when the repository was generated (see its first commit).
 - No dependency on private lean-to-it.
 - `lean-to` is a planned dependency: the architecture intends it, but it is not in the package files yet. Adding it is a recorded integration milestone, once `lean-to` publishes a version to pin.
 - Decisions live in this file; `docs/adr/` is not used, and `tools/decision-records/check-no-adr-folder.mjs` fails if it exists.
+
+## Changes
+
+- 2026-10-28: Issues and specs move from local Markdown under `.scratch/` to GitHub Issues on `weareit-app/learn-to-prove-it`, with the five default triage labels created there. `docs/agents/issue-tracker.md` is the GitHub template from `setup-matt-pocock-skills`.

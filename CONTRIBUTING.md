@@ -12,7 +12,7 @@ lake exe cache get
 ./scripts/check.sh
 ```
 
-runs `lake build` and the skills-sync and decision-record checks (Node 24 runs the last two). CI runs the same checks on every pull request.
+runs `lake build`, `lake test` (the Lean tests in `LearnToProveItTest`) and the skills-sync, decision-record and action-pin checks (Node 24 runs the last three). CI runs the same checks on every pull request.
 
 ## Pull requests
 

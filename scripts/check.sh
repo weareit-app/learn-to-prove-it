@@ -3,6 +3,7 @@
 # cache first with `lake exe cache get`.
 set -eu
 lake build
+lake test
 node tools/skills-sync/sync-skills.mjs --check
 node tools/decision-records/check-no-adr-folder.mjs
 node tools/action-pins/check-action-pins.mjs
